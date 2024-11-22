@@ -16,5 +16,5 @@
 
 
 class Config:
-    SQLALCHEMY_DATABASE_URI='mysql+pymysql://root:@localhost/witi_at'
+    SQLALCHEMY_DATABASE_URI='mysql+pymysql://root:@localhost/witi_site'
 

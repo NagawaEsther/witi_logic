@@ -1,5 +1,4 @@
 from witi_app import db
-from datetime import datetime
 
 class Event(db.Model):
     __tablename__ = 'events'
@@ -7,19 +6,15 @@ class Event(db.Model):
     name = db.Column(db.String(100), nullable=False)
     description = db.Column(db.Text, nullable=False)
     date = db.Column(db.Date, nullable=False)
-    time = db.Column(db.Time, nullable=False)
-    location = db.Column(db.String(200), nullable=False)
-    registration_required = db.Column(db.Boolean, nullable=False, default=False)
-    max_participants = db.Column(db.Integer)
+    image_url = db.Column(db.String(200))
+    rsvp_link = db.Column(db.String(200), nullable=True)  # New column for RSVP link
 
-    def __init__(self, name, description, date, time, location, registration_required=False, max_participants=None):
+    def __init__(self, name, description, date, image_url, rsvp_link=None):
         self.name = name
         self.description = description
         self.date = date
-        self.time = time
-        self.location = location
-        self.registration_required = registration_required
-        self.max_participants = max_participants
+        self.image_url = image_url
+        self.rsvp_link = rsvp_link
 
     def __repr__(self):
-        return f"Event('{self.name}', '{self.date}', '{self.time}', '{self.location}')"
+        return f"Event('{self.name}', '{self.date}')"

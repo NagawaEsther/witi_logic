@@ -2,7 +2,7 @@ from flask import Blueprint, request, jsonify
 from witi_app import db
 from witi_app.models.events import Event
 from datetime import datetime
-from flask_jwt_extended import jwt_required,get_jwt_identity
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from functools import wraps
 
 event_bp = Blueprint('event', __name__, url_prefix='/api/v1/event')
@@ -29,10 +29,8 @@ def get_all_events():
             'name': event.name,
             'description': event.description,
             'date': event.date.strftime('%Y-%m-%d'),
-            'time': event.time.strftime('%H:%M'),
-            'location': event.location,
-            'registration_required': event.registration_required,
-            'max_participants': event.max_participants
+            'image_url': event.image_url,
+            'rsvp_link': event.rsvp_link
         }
         output.append(event_data)
     return jsonify({'events': output})
@@ -47,10 +45,8 @@ def get_event(id):
         'name': event.name,
         'description': event.description,
         'date': event.date.strftime('%Y-%m-%d'),
-        'time': event.time.strftime('%H:%M'),
-        'location': event.location,
-        'registration_required': event.registration_required,
-        'max_participants': event.max_participants
+        'image_url': event.image_url,
+        'rsvp_link': event.rsvp_link
     }
     return jsonify(event_data)
 
@@ -60,15 +56,16 @@ def get_event(id):
 def create_event():
     try:
         data = request.get_json()
+
+        # Create new event with the necessary fields
         new_event = Event(
             name=data['name'],
             description=data['description'],
             date=datetime.strptime(data['date'], '%Y-%m-%d'),
-            time=datetime.strptime(data['time'], '%H:%M'),
-            location=data['location'],
-            registration_required=data['registration_required'],
-            max_participants=data.get('max_participants')
+            image_url=data['image_url'],
+            rsvp_link=data.get('rsvp_link')  # Handle the optional RSVP link
         )
+
         db.session.add(new_event)
         db.session.commit()
 
@@ -77,10 +74,8 @@ def create_event():
             'name': new_event.name,
             'description': new_event.description,
             'date': new_event.date.strftime('%Y-%m-%d'),
-            'time': new_event.time.strftime('%H:%M'),
-            'location': new_event.location,
-            'registration_required': new_event.registration_required,
-            'max_participants': new_event.max_participants
+            'image_url': new_event.image_url,
+            'rsvp_link': new_event.rsvp_link
         }
 
         return jsonify({
@@ -99,32 +94,22 @@ def update_event(id):
         event = Event.query.get_or_404(id)
         data = request.get_json()
 
-        # Update fields, ensuring that we handle dates and times properly
+        # Update fields, ensuring that we handle new fields
         event.name = data.get('name', event.name)
         event.description = data.get('description', event.description)
-        
-        if 'date' in data:
-            event.date = datetime.strptime(data['date'], '%Y-%m-%d')
-        
-        if 'time' in data:
-            event.time = datetime.strptime(data['time'], '%H:%M')
-        
-        event.location = data.get('location', event.location)
-        event.registration_required = data.get('registration_required', event.registration_required)
-        event.max_participants = data.get('max_participants', event.max_participants)
+        event.date = datetime.strptime(data['date'], '%Y-%m-%d') if 'date' in data else event.date
+        event.image_url = data.get('image_url', event.image_url)
+        event.rsvp_link = data.get('rsvp_link', event.rsvp_link)
 
         db.session.commit()
 
-        # Prepare the event data for the response
         event_data = {
             'id': event.id,
             'name': event.name,
             'description': event.description,
-            'date': event.date.strftime('%Y-%m-%d') if event.date else None,
-            'time': event.time.strftime('%H:%M') if event.time else None,
-            'location': event.location,
-            'registration_required': event.registration_required,
-            'max_participants': event.max_participants
+            'date': event.date.strftime('%Y-%m-%d'),
+            'image_url': event.image_url,
+            'rsvp_link': event.rsvp_link
         }
 
         return jsonify({
